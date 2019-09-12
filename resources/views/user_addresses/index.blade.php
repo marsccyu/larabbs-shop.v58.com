@@ -7,7 +7,7 @@
             <div class="card panel-default">
                 <div class="card-header">
                     收貨地址列表
-                    <a href="{{ route('user_addresses.create') }}" class="float-right">新增地址</a>
+                    <a href="javascript:void(0);" class="float-right">新增地址</a>
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
@@ -28,8 +28,8 @@
                                 <td>{{ $address->zip }}</td>
                                 <td>{{ $address->contact_phone }}</td>
                                 <td>
-                                    <button class="btn btn-primary">修改</button>
-                                    <button class="btn btn-danger">刪除</button>
+                                    <button class="btn btn-danger">修改(無功能)</button>
+                                    <button class="btn btn-danger">删除(無功能)</button>
                                 </td>
                             </tr>
                         @endforeach
