@@ -42,6 +42,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(UserAddress::class);
     }
 
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
     public function favoriteProducts()
     {
         // belongsToMany() 方法用於定義一個多對多的關聯，第一個參數是關聯的模型類名，第二個參數是中間表的表名。
