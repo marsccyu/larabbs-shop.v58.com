@@ -3,13 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderRequest;
-use App\Models\ProductSku;
 use App\Models\UserAddress;
 use App\Models\Order;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Jobs\CloseOrder;
-use App\Services\CartService;
 use App\Services\OrderService;
 
 class OrdersController extends Controller
