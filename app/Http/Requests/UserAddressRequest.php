@@ -34,6 +34,10 @@ class UserAddressRequest extends Request
 
     public function messages()
     {
-
+        return [
+            'zip.required' => '郵遞區號 不能留白',
+            'contact_name.required' => '聯絡人名稱 不能留白',
+            'contact_phone.required' => '聯絡人電話 不能留白',
+        ];
     }
 }

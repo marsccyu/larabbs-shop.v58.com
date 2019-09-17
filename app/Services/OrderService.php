@@ -48,7 +48,7 @@ class OrderService
                 $item->save();
                 $totalAmount += $sku->price * $data['amount'];
                 if ($sku->decreaseStock($data['amount']) <= 0) {
-                    throw new InvalidRequestException('该商品库存不足');
+                    throw new InvalidRequestException('該商品庫存不足');
                 }
             }
             // 更新订单总金额
@@ -61,7 +61,7 @@ class OrderService
             return $order;
         });
 
-        // 这里我们直接使用 dispatch 函数
+        // 分配任務，這邊直接使用 dispatch 函式
         dispatch(new CloseOrder($order, config('app.order_ttl')));
 
         return $order;
