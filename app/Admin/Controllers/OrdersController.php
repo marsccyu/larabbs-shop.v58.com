@@ -34,12 +34,12 @@ class OrdersController extends Controller
      * @param Content $content
      * @return Content
      */
-    public function show($id, Content $content)
+    public function show(Order $order, Content $content)
     {
         return $content
-            ->header('Detail')
-            ->description('description')
-            ->body($this->detail($id));
+            ->header('查看订单')
+            // body 方法可以接受 Laravel 的视图作为参数
+            ->body(view('admin.orders.show', ['order' => $order]));
     }
 
     /**
@@ -81,7 +81,10 @@ class OrdersController extends Controller
         $grid = new Grid(new Order);
 
         // 只展示已支付的订单，并且默认按支付时间倒序排序
-        $grid->model()->whereNotNull('paid_at')->orderBy('paid_at', 'desc');
+        // $grid->model()->whereNotNull('paid_at')->orderBy('paid_at', 'desc');
+
+        // 不使用支付模組所以沒有支付功能，直接引入所有訂單
+        $grid->model()->orderBy('paid_at', 'desc');
 
         $grid->no('订单流水号');
         // 展示关联关系的字段时，使用 column 方法
