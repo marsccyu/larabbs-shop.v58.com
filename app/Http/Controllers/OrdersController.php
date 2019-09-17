@@ -11,6 +11,7 @@ use App\Exceptions\InvalidRequestException;
 use Carbon\Carbon;
 use App\Http\Requests\SendReviewRequest;
 use App\Events\OrderReviewed;
+use App\Http\Requests\ApplyRefundRequest;
 
 class OrdersController extends Controller
 {
