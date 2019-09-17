@@ -1,72 +1,138 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+- 耗時較長的任務(如Mail)，透過 Listeners 解耦程式，適合不需要獲得返回值並且耗時較長的任務。
+- 人為造成的異常(如重複驗證信箱)不影響系統運作，故不需紀錄在 Log 內，將不需紀錄在 Log 內的異常寫入 `app/Exceptions/Handler.php` 中。
+- 系統異常如MySQL連線失敗或異常，須適度提供訊息給用戶並記錄在 Log 內。
+- MySQL 內跟"金錢"有關的欄位需使用 decimal 型態儲存。 
+- 在 Request 內可以透過閉包校驗數據。
+- 使用任務時需要先將 .env 內的隊列驅動由 Sync(同步) 改為 redis，並安裝 `predis/predis`
 
-## About Laravel
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# Event / Listeners 
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+參考[這篇](https://laravel-china.org/articles/20712)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+laravel的事件功能實際上更傾向是一種管理手段，並不是沒了它我們就做不到了，只是它能讓我們做得更加好，更加優雅。
 
-## Learning Laravel
+註冊事件 : `app/Providers/EventServiceProvider.php`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+事件 :     `app/Events/OrderReviewed.php`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+監聽器 :   `app/Listeners/UpdateProductRating.php`
 
-## Laravel Sponsors
+觸發 : 客戶對訂單(`Order`)內的資料留下評價(`OrdersController::sendReview()`)後，觸發計算並更新商品的評價及評分(`UpdateProductRating`)。
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+透過註冊事件將"事件"綁定"監聽器"，並在監聽器的 `handle` 方法中進行邏輯處理。
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
+> 事件用處在"解耦"，例如用戶註冊完成(Event)後須完成的事項(Listeners) : 寄送 Mail、發送簡訊等等。
+>
+> 透過 註冊完成>事件>監聽器 將事件解耦成小單元，以利管理及維護。
 
-## Contributing
+# Job / Queue
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+任務 : `app/Jobs/CloseOrder.php`
 
-## Security Vulnerabilities
+觸發 : 訂單建立時會扣庫存，若不關閉未付款訂單則會造成庫存不足但未正確銷售的異常，故透過進行"延遲任務"在延遲 N 秒後將未付款訂單關閉。
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Laravel 會用當前時間加上任務的延遲時間計算出任務應該被執行的時間戳，然後將這個時間戳和任務信息序列化之後存入隊列，Laravel 的隊列處理器會不斷查詢並執行隊列中滿足預計執行時間等於或早於當前時間的任務。
 
-## License
+將訂單成立邏輯包裝於 `Services/Services/OrderService::store()` 內，若在 Controller 中透過 `CloseOrder::dispatch();` 分發任務，
 
-The Laravel framework is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+在 Services 內直接用 `dispatch(new CloseOrder())` 分發任務，最後啟動隊列處理器 : 
+
+```
+php artisan queue:work
+```
+
+> 生產環境中透過進程工具[Supervisor](https://laravel-china.org/docs/laravel/5.5/queues#supervisor-configuration)持續執行隊列處理。
+
+# Plugins
+
+* [Laravel-mix](https://laravel-mix.com/docs/2.1/installation) : 資源任務編譯器
+* [Laravel-lang](https://github.com/overtrue/laravel-lang/) : 語言包  
+* [Sweetalert](http://mishengqiang.com/sweetalert/) : 美化瀏覽器彈出視窗 (npm)  
+* [Laravel-Admin](https://github.com/z-song/laravel-admin) : 管理後台  
+* [Redis](https://redis.io/) : Redis (6.5節中隊列驅動需使用)
+* [Yansongda/pay](https://github.com/yansongda/pay) : 封裝了支付寶和微信支付的接口
+* [moontoast/math](https://github.com/moontoast/math) : 進行金額計算時避免浮點數問題用
+
+<br>
+
+## Laravel-mix
+ 編譯 SASS 及 JS ，使用方式參考[文檔](https://laravel-china.org/docs/laravel/5.5/mix/1307)
+ 
+#### Installation
+```
+npm install
+```
+<br />
+
+edit `webpack.mix.js file` : 
+
+```js
+mix.js('resources/assets/js/app.js', 'public/js')
+    .sass('resources/assets/sass/app.scss', 'public/css')
+    .version();
+```
+
+
+<br><br>
+
+## Laravel-lang
+
+#### Installation
+
+將訊息轉換成不同地區語言的語言包。
+
+```
+composer require "overtrue/laravel-lang:~3.0"
+```
+<br />
+
+`config/app.php`
+
+```
+'locale' => 'zh-CN',
+```
+
+<br><br>
+
+## Laravel-Admin
+
+#### Installation
+
+
+```
+composer require encore/laravel-admin
+```
+<br />
+
+Then run these commands to publish assets and config：
+
+```
+php artisan vendor:publish --provider="Encore\Admin\AdminServiceProvider"
+```
+<br />
+
+At last run following command to finish install.
+
+```
+php artisan vendor:publish --provider="Encore\Admin\AdminServiceProvider"
+```
+
+<br><br>
+
+## Redis
+
+#### Installation
+
+```
+composer require predis/predis
+```
+
+change `.env` file option : 
+
+```php
+QUEUE_DRIVER=redis
+```
+
+
