@@ -1,20 +1,20 @@
 @extends('layouts.app')
-@section('title', '购物车')
+@section('title', '購物車')
 
 @section('content')
     <div class="row">
         <div class="col-lg-10 offset-lg-1">
             <div class="card">
-                <div class="card-header">我的购物车</div>
+                <div class="card-header">Shop Cart</div>
                 <div class="card-body">
                     <table class="table table-striped">
                         <thead>
                         <tr>
                             <th><input type="checkbox" id="select-all"></th>
-                            <th>商品信息</th>
-                            <th>单价</th>
-                            <th>数量</th>
-                            <th>操作</th>
+                            <th>Info</th>
+                            <th>Price</th>
+                            <th>Amount</th>
+                            <th>Act</th>
                         </tr>
                         </thead>
                         <tbody class="product_list">
@@ -35,26 +35,26 @@
               </span>
                                         <span class="sku_title">{{ $item->productSku->title }}</span>
                                         @if(!$item->productSku->product->on_sale)
-                                            <span class="warning">该商品已下架</span>
+                                            <span class="warning">商品已下架</span>
                                         @endif
                                     </div>
                                 </td>
-                                <td><span class="price">￥{{ $item->productSku->price }}</span></td>
+                                <td><span class="price">$ {{ $item->productSku->price }}</span></td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm amount" @if(!$item->productSku->product->on_sale) disabled @endif name="amount" value="{{ $item->amount }}">
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-danger btn-remove">移除</button>
+                                    <button class="btn btn-sm btn-danger btn-remove">Remove</button>
                                 </td>
                             </tr>
                         @endforeach
                         </tbody>
                     </table>
-                    <!-- 开始 -->
+
                     <div>
                         <form class="form-horizontal" role="form" id="order-form">
                             <div class="form-group row">
-                                <label class="col-form-label col-sm-3 text-md-right">选择收货地址</label>
+                                <label class="col-form-label col-sm-3 text-md-right">選擇收貨地址</label>
                                 <div class="col-sm-9 col-md-7">
                                     <select class="form-control" name="address">
                                         @foreach($addresses as $address)
@@ -64,32 +64,31 @@
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label class="col-form-label col-sm-3 text-md-right">备注</label>
+                                <label class="col-form-label col-sm-3 text-md-right">備註</label>
                                 <div class="col-sm-9 col-md-7">
                                     <textarea name="remark" class="form-control" rows="3"></textarea>
                                 </div>
                             </div>
-                            <!-- 优惠码开始 -->
-                            <div class="form-group row">
-                                <label class="col-form-label col-sm-3 text-md-right">优惠码</label>
+                            <!-- 优惠码開始 -->
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">優惠碼</label>
                                 <div class="col-sm-4">
                                     <input type="text" class="form-control" name="coupon_code">
-                                    <span class="form-text text-muted" id="coupon_desc"></span>
+                                    <span class="help-block" id="coupon_desc"></span>
                                 </div>
                                 <div class="col-sm-3">
-                                    <button type="button" class="btn btn-success" id="btn-check-coupon">检查</button>
+                                    <button type="button" class="btn btn-success" id="btn-check-coupon">檢查</button>
                                     <button type="button" class="btn btn-danger" style="display: none;" id="btn-cancel-coupon">取消</button>
                                 </div>
                             </div>
                             <!-- 优惠码结束 -->
                             <div class="form-group">
                                 <div class="offset-sm-3 col-sm-3">
-                                    <button type="button" class="btn btn-primary btn-create-order">提交订单</button>
+                                    <button type="button" class="btn btn-primary btn-create-order">提交訂單</button>
                                 </div>
                             </div>
                         </form>
                     </div>
-                    <!-- 结束 -->
                 </div>
             </div>
         </div>
@@ -106,9 +105,9 @@
                 // data('id') 方法可以获取到我们之前设置的 data-id 属性的值，也就是对应的 SKU id
                 var id = $(this).closest('tr').data('id');
                 swal({
-                    title: "确认要将该商品移除？",
+                    title: "確定要刪除商品嗎？",
                     icon: "warning",
-                    buttons: ['取消', '确定'],
+                    buttons: ['取消', '確定'],
                     dangerMode: true,
                 })
                     .then(function(willDelete) {
@@ -140,8 +139,8 @@
             $('.btn-create-order').click(function () {
                 // 构建请求参数，将用户选择的地址的 id 和备注内容写入请求参数
                 var req = {
-                    address_id: $('#order-form').find('select[name=address]').val(),
                     items: [],
+                    address_id: $('#order-form').find('select[name=address]').val(),
                     remark: $('#order-form').find('textarea[name=remark]').val(),
                     coupon_code: $('input[name=coupon_code]').val(), // 从优惠码输入框中获取优惠码
                 };
@@ -167,7 +166,7 @@
                 });
                 axios.post('{{ route('orders.store') }}', req)
                     .then(function (response) {
-                        swal('订单提交成功', '', 'success')
+                        swal('訂單提交成功', '', 'success')
                             .then(() => {
                                 location.href = '/orders/' + response.data.id;
                             });
@@ -182,9 +181,10 @@
                             });
                             html += '</div>';
                             swal({content: $(html)[0], icon: 'error'})
+                        } else if (error.response.status === 403) { // 这里判断状态 403
+                            swal(error.response.data.msg, '', 'error');
                         } else {
-                            // 其他情况应该是系统挂了
-                            swal('系统错误', '', 'error');
+                            swal('系統錯誤', '', 'error');
                         }
                     });
             });
@@ -195,7 +195,7 @@
                 var code = $('input[name=coupon_code]').val();
                 // 如果没有输入则弹框提示
                 if(!code) {
-                    swal('请输入优惠码', '', 'warning');
+                    swal('請輸入優惠碼', '', 'warning');
                     return;
                 }
                 // 调用检查接口
@@ -208,13 +208,13 @@
                     }, function (error) {
                         // 如果返回码是 404，说明优惠券不存在
                         if(error.response.status === 404) {
-                            swal('优惠码不存在', '', 'error');
+                            swal('優惠碼不存在', '', 'error');
                         } else if (error.response.status === 403) {
                             // 如果返回码是 403，说明有其他条件不满足
                             swal(error.response.data.msg, '', 'error');
                         } else {
                             // 其他错误
-                            swal('系统内部错误', '', 'error');
+                            swal('系統錯誤', '', 'error');
                         }
                     })
             });
@@ -226,7 +226,6 @@
                 $('#btn-cancel-coupon').hide(); // 隐藏 取消 按钮
                 $('#btn-check-coupon').show(); // 显示 检查 按钮
             });
-
         });
     </script>
 @endsection
