@@ -11,6 +11,7 @@ use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
 use Illuminate\Http\Request;
 use App\Exceptions\InvalidRequestException;
+use App\Models\CrowdfundingProduct;
 
 class OrdersController extends Controller
 {
@@ -149,11 +150,16 @@ class OrdersController extends Controller
     {
         // 判断当前订单是否已支付
         if (!$order->paid_at) {
-            throw new InvalidRequestException('该订单未付款');
+            throw new InvalidRequestException('該訂單未付款');
         }
         // 判断当前订单发货状态是否为未发货
         if ($order->ship_status !== Order::SHIP_STATUS_PENDING) {
-            throw new InvalidRequestException('该订单已发货');
+            throw new InvalidRequestException('該訂單已發貨');
+        }
+        // 众筹订单只有在众筹成功之后发货
+        if ($order->type === Order::TYPE_CROWDFUNDING &&
+            $order->items[0]->product->crowdfunding->status !== CrowdfundingProduct::STATUS_SUCCESS) {
+            throw new InvalidRequestException('眾籌訂單只能在眾籌完成後發貨');
         }
         // Laravel 5.5 之后 validate 方法可以返回校验过的值
         $data = $this->validate($request, [
@@ -161,8 +167,9 @@ class OrdersController extends Controller
             'express_no'      => ['required'],
         ], [], [
             'express_company' => '物流公司',
-            'express_no'      => '物流单号',
+            'express_no'      => '物流單號',
         ]);
+
         // 将订单发货状态改为已发货，并存入物流信息
         $order->update([
             'ship_status' => Order::SHIP_STATUS_DELIVERED,

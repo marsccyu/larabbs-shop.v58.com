@@ -122,7 +122,7 @@
                                 $order->paid_at &&
                                 $order->refund_status === \App\Models\Order::REFUND_STATUS_PENDING)
                                 <div class="refund-button">
-                                    <button class="btn btn-sm btn-danger" id="btn-apply-refund">申請退款</button>
+                                    <button class="btn btn-sm btn-danger" id="btn-apply-refund">申请退款</button>
                                 </div>
                             @endif
                         </div>
