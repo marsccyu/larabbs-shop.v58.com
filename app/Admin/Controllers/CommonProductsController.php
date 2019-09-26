@@ -91,10 +91,10 @@ abstract class CommonProductsController extends Controller
         });
 
         // 屬性
-//        $form->hasMany('properties', '商品屬性', function (Form\NestedForm $form) {
-//            $form->text('name', '屬性名')->rules('required');
-//            $form->text('value', '屬性值')->rules('required');
-//        });
+        $form->hasMany('properties', '商品屬性', function (Form\NestedForm $form) {
+            $form->text('name', '屬性名')->rules('required');
+            $form->text('value', '屬性值')->rules('required');
+        });
 
         $form->saving(function (Form $form) {
             $form->model()->price = collect($form->input('skus'))->where(Form::REMOVE_FLAG_NAME, 0)->min('price') ?: 0;
