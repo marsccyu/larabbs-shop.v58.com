@@ -31,12 +31,14 @@ class Order extends Model
         self::SHIP_STATUS_RECEIVED  => '已收貨',
     ];
 
+    const TYPE_SECKILL = 'seckill';
     const TYPE_NORMAL = 'normal';
     const TYPE_CROWDFUNDING = 'crowdfunding';
 
     public static $typeMap = [
         self::TYPE_NORMAL => '普通商品訂單',
         self::TYPE_CROWDFUNDING => '眾籌商品訂單',
+        self::TYPE_SECKILL => '秒殺商品訂單',
     ];
 
     protected $fillable = [
