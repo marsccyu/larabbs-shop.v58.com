@@ -21,8 +21,14 @@ class Product extends Model
 
     public static $typeMap = [
         self::TYPE_NORMAL  => '普通商品',
-        self::TYPE_CROWDFUNDING => '众筹商品',
+        self::TYPE_CROWDFUNDING => '眾籌商品',
+        self::TYPE_SECKILL => '秒殺商品',
     ];
+
+    public function seckill()
+    {
+        return $this->hasOne(SeckillProduct::class);
+    }
 
     // 与商品SKU关联
     public function skus()
